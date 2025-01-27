@@ -1,6 +1,5 @@
 package com.knifescout.csfloat
 
-import com.knifescout.jedisPool
 import com.knifescout.json
 import com.knifescout.responses.CsFloatResponse
 import io.ktor.client.*
@@ -32,16 +31,33 @@ suspend fun getSecondCheapest(name: String): Entry? {
 suspend fun getMostDiscounted(): List<Entry>? {
     val params = "?limit=50&rarity=6&sort_by=highest_discount&max_float=0.38&min_price=7248&max_price=10000000&type=buy_now";
 
-    val body = getCsFloatData(params)
+    var body = getCsFloatData(params)
 
     if (body == null) {
         return null
     }
 
-    val csFloatResponse: CsFloatResponse = json.decodeFromString(body)
+    var csFloatResponse: CsFloatResponse = json.decodeFromString(body)
 
-    val entries = csFloatResponse.data
+    var allResults = csFloatResponse.data.toList()
+
+    var i = 0;
+
+    while (i < 10) {
+        body = getCsFloatData("$params&cursor=${csFloatResponse.cursor}")
+
+        if (body == null) {
+            return null
+        }
+
+        csFloatResponse = json.decodeFromString(body)
+        allResults = allResults.plus(csFloatResponse.data)
+        i++
+    }
+
+    val entries = allResults
         .map { toEntry(it) }
+        .filter { it.discountPercentage > 0 }
         .sortedByDescending { it.discountPercentage }
 
     return entries
@@ -49,12 +65,6 @@ suspend fun getMostDiscounted(): List<Entry>? {
 
 suspend fun getCsFloatData(params: String): String? {
     val baseUrl = "https://csfloat.com/api/v1/listings"
-
-    val cachedValue = jedisPool.get("$baseUrl$params");
-
-    if (cachedValue != null) {
-        return cachedValue
-    }
 
     val client = HttpClient(CIO)
 
@@ -71,8 +81,6 @@ suspend fun getCsFloatData(params: String): String? {
     }
 
     val body = response.bodyAsText()
-
-    jedisPool.setex("$baseUrl$params", 60 * 30, body)
 
     client.close()
 

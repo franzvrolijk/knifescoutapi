@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CsFloatResponse(
-    var data: List<CsFloatEntry>
+    var data: List<CsFloatEntry>,
+    val cursor: String
 )
 
 @Serializable
@@ -33,7 +34,6 @@ data class CsFloatItem(
 @Serializable
 data class CsFloatReference(
     val base_price: Float,
-    val float_factor: Float,
     val quantity: Int
 ) {
     val basePriceInDollars: Float
