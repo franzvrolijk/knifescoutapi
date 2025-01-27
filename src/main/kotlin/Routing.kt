@@ -17,7 +17,12 @@ private val json = Json {
 }
 
 suspend fun getCsFloatData(url: String): String? {
-    val jedis = UnifiedJedis("redis://localhost:6379")
+    val redisHost = System.getenv("REDIS_HOST")
+    val redisPort = 6379
+    val redisConnectionString = "redis://$redisHost:$redisPort"
+
+    val jedis = UnifiedJedis(redisConnectionString)
+    
     val cachedValue = jedis.get(url);
 
     if (cachedValue != null) {
@@ -97,8 +102,19 @@ fun Application.configureRouting() {
             return@get;
         }
 
-        get("/") {
-            call.respondText("OK")
+        get("/health") {
+            val redisHost = System.getenv("REDIS_HOST")
+            val redisPort = 6379
+            val redisConnectionString = "redis://$redisHost:$redisPort"
+
+            val jedis = UnifiedJedis(redisConnectionString)
+
+            val keys = jedis.keys("*").toList()
+
+            if (keys.isEmpty()) call.respond("No keys")
+            else call.respond(json.encodeToString(keys))
+
+            return@get;
         }
     }
 }

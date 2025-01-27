@@ -17,8 +17,6 @@ fun Application.configureCors() {
     install(CORS) {
         allowHost("franzvrolijk.github.io", schemes = listOf("https"))
         allowMethod(HttpMethod.Get)
-        allowHeader(HttpHeaders.ContentType)
-        allowHeader(HttpHeaders.ContentLength)
-        allowHeader(HttpHeaders.Origin)
+        allowHeaders { true }
     }
 }

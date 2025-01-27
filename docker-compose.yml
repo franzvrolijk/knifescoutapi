@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  api:
+    image: franzvrolijk1/knifescoutapi:1.0.0
+    container_name: api
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    ports:
+      - "8080:8080"
