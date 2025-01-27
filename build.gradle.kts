@@ -31,5 +31,6 @@ dependencies {
     implementation("io.ktor:ktor-client-core:3.0.3")
     implementation("io.ktor:ktor-client-cio:3.0.3")
     implementation("io.ktor:ktor-server-cors:3.0.3")
+    implementation("redis.clients:jedis:5.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
