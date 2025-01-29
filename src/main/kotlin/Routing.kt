@@ -2,10 +2,14 @@ package com.knifescout
 
 import com.knifescout.csfloat.getMostDiscounted
 import com.knifescout.csfloat.getSecondCheapest
+import com.knifescout.skinsnipe.getCheapest
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 val json = Json {
@@ -13,52 +17,59 @@ val json = Json {
 }
 
 fun Application.configureRouting() {
+    val scope = CoroutineScope(Dispatchers.Default)
+
     routing {
+        get("prewarm") {
+            scope.launch {
+                val entries = getMostDiscounted() ?: return@launch
+                jedisPool.setex("baseprice", 60 * 15, json.encodeToString(entries))
+            }
+
+            call.respond(HttpStatusCode.OK)
+            return@get
+        }
+
         get("api/csfloat/baseprice") {
             val cachedResponse = jedisPool.get("baseprice")
             if (cachedResponse != null) {
-                call.respondText(cachedResponse);
-                return@get;
+                call.respondText(cachedResponse)
+                return@get
             }
 
             val entries = getMostDiscounted()
 
             if (entries == null) {
-                call.respond(HttpStatusCode.InternalServerError, "Error fetching CsFloat data");
-                return@get;
+                call.respond(HttpStatusCode.InternalServerError, "Error fetching CsFloat data")
+                return@get
             }
 
-            val strigifiedEntries = json.encodeToString(entries);
+            val strigifiedEntries = json.encodeToString(entries)
 
             jedisPool.setex("baseprice", 60 * 15, strigifiedEntries)
 
-            call.respond(strigifiedEntries);
-            return@get;
+            call.respond(strigifiedEntries)
+            return@get
         }
 
-        get("api/csfloat/secondcheapest/{name}") {
+        get("api/cheapest/{name}") {
             val name = call.parameters["name"]
-                ?: return@get call.respondText("Missing name", status = HttpStatusCode.BadRequest);
+                ?: return@get call.respondText("Missing name", status = HttpStatusCode.BadRequest)
 
-            val cachedResponse = jedisPool.get("secondcheapest:$name")
+            val cachedResponse = jedisPool.get("compare:$name")
             if (cachedResponse != null) {
-                call.respondText(cachedResponse);
-                return@get;
+                call.respondText(cachedResponse)
+                return@get
             }
 
-            val secondCheapest = getSecondCheapest(name)
+            val cheapest = getCheapest(name)
 
-            if (secondCheapest == null) {
-                call.respond(HttpStatusCode.InternalServerError, "Error fetching CsFloat data");
-                return@get;
-            }
+            val stringifiedEntry = json.encodeToString(cheapest)
 
-            val stringifiedEntry = json.encodeToString(secondCheapest);
+            jedisPool.setex("compare:$name", 60 * 5, stringifiedEntry)
 
-            jedisPool.setex("secondcheapest:$name", 60 * 5, stringifiedEntry)
-
-            call.respond(stringifiedEntry);
-            return@get;
+            call.respond(stringifiedEntry)
+            return@get
         }
 
         get("health") {

@@ -1,7 +1,6 @@
 package com.knifescout.csfloat
 
 import com.knifescout.json
-import com.knifescout.responses.CsFloatResponse
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*

@@ -1,4 +1,4 @@
-package com.knifescout.responses
+package com.knifescout.csfloat
 
 import kotlinx.serialization.Serializable
 
