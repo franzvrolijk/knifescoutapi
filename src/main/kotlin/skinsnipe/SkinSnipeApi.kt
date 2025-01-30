@@ -68,19 +68,21 @@ suspend fun getCheapest(name: String): CheapestResult {
         throw Exception("No prices found")
     }
 
-    val cheapest = result.prices.minBy { it.value }
+    val cheapest = result.prices
+        .filter{ it.value != null }
+        .minBy { it.value!! }
 
-    return CheapestResult(cheapest.value, cheapest.marketName)
+    return CheapestResult(cheapest.value!!, cheapest.marketName ?: "Unknown")
 }
 
 suspend fun getSkinSnipeId(name: String): Int {
-    val formattedName = name.replace("\\(.*?\\)".toRegex(), "").trim()
+    val formattedName = name.replace("\\(.*?\\)".toRegex(), "").trim().encodeURLQueryComponent()
     val url = "https://pricing.tradeupspy.com/skins/search?query=$formattedName&cat=-1&game=730"
 
     val response = skinSnipeRequest(url)
 
     if (!response.status.isSuccess()) {
-        throw Exception("Non-OK code from SkinSnipe search")
+        throw Exception("Non-OK code from SkinSnipe search: ${response.status}, name: ${formattedName}")
     }
 
     val body = response.bodyAsText()
@@ -113,7 +115,7 @@ data class SkinSnipeSkin (
 
 @Serializable
 data class SkinSnipePrice (
-    val marketId: Int,
-    val marketName: String,
-    val value: Float // dollars
+    val marketId: Int?,
+    val marketName: String?,
+    val value: Float? // dollars
 )

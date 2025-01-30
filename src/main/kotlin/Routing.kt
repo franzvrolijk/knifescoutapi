@@ -1,7 +1,6 @@
 package com.knifescout
 
 import com.knifescout.csfloat.getMostDiscounted
-import com.knifescout.csfloat.getSecondCheapest
 import com.knifescout.skinsnipe.getCheapest
 import io.ktor.http.*
 import io.ktor.server.application.*

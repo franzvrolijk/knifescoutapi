@@ -35,3 +35,10 @@ out/
 ### VS Code ###
 .vscode/
 .env
+
+/client/node_modules
+/client/dist
+/client/.env
+
+docker-compose.yml
+var.env

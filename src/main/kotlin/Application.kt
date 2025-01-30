@@ -15,7 +15,9 @@ fun Application.module() {
 
 fun Application.configureCors() {
     install(CORS) {
-        allowHost("franzvrolijk.github.io", schemes = listOf("https"))
+        allowHost("zealous-pond-0dbef2f03.4.azurestaticapps.net", schemes = listOf("https"))
+        allowHost("localhost", schemes = listOf("http"))
+        allowHost("localhost:5173", schemes = listOf("http"))
         allowMethod(HttpMethod.Get)
         allowHeaders { true }
     }
