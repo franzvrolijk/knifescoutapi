@@ -6,9 +6,10 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.delay
 
-suspend fun getSecondCheapest(name: String): Entry? {
-    val params = "?category=1&type=buy_now&sort_by=lowest_price&limit=2&market_hash_name=$name";
+suspend fun getSecondCheapest(id: Int): Entry? {
+    val params = "?category=1&type=buy_now&sort_by=lowest_price&limit=2&def_index=$id";
 
     val body = getCsFloatData(params)
 
@@ -28,7 +29,7 @@ suspend fun getSecondCheapest(name: String): Entry? {
 }
 
 suspend fun getMostDiscounted(): List<Entry>? {
-    val params = "?limit=50&rarity=6&sort_by=highest_discount&max_float=0.38&min_price=7248&max_price=10000000&type=buy_now";
+    val params = "?limit=50&rarity=6&sort_by=highest_discount&category=1&max_float=0.38&min_price=7248&max_price=10000000&type=buy_now&def_index=500,503,505,506,507,508,509,512,514,515,516,517,518,519,520,521,522,523,525,526";
 
     var body = getCsFloatData(params)
 
@@ -42,7 +43,8 @@ suspend fun getMostDiscounted(): List<Entry>? {
 
     var i = 0;
 
-    while (i < 10) {
+    while (i < 15) {
+        delay(500)
         body = getCsFloatData("$params&cursor=${csFloatResponse.cursor}")
 
         if (body == null) {

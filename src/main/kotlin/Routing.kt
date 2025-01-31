@@ -71,6 +71,34 @@ fun Application.configureRouting() {
             return@get
         }
 
+        get("api/csfloat/secondcheapest/{id}") {
+            val idString = call.parameters["id"]
+                ?: return@get call.respondText("Missing id", status = HttpStatusCode.BadRequest)
+
+            val id = idString.toIntOrNull()
+                ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+
+            val cachedResponse = jedisPool.get("secondcheapest:$id")
+            if (cachedResponse != null) {
+                call.respondText(cachedResponse)
+                return@get
+            }
+
+            val secondCheapest = getSecondCheapest(id)
+
+            if (secondCheapest == null) {
+                call.respond(HttpStatusCode.InternalServerError, "Error fetching CsFloat data")
+                return@get
+            }
+
+            val stringifiedEntry = json.encodeToString(secondCheapest)
+
+            jedisPool.setex("secondcheapest:$id", 60 * 5, stringifiedEntry)
+
+            call.respond(stringifiedEntry)
+            return@get
+        }
+
         get("health") {
             call.respondText { json.encodeToString(jedisPool.keys("*")) }
         }
