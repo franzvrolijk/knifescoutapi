@@ -4,28 +4,36 @@ import { getBaseUrl } from "./config";
 
 export default function Cheapest({ entry }: { entry: EntryModel }) {
   const [cheapest, setCheapest] = useState<CheapestModel | null>(null);
+  const [secondCheapest, setSecondCheapest] = useState<EntryModel | null>(null);
 
-  const getCheapest = async () => {
+  const marketCheck = async () => {
     if (cheapest) return;
-    const url = `${getBaseUrl()}/api/cheapest/${entry.name}`;
-    const res = await fetch(url, { method: "GET", mode: "cors" });
+    const cheapestUrl = `${getBaseUrl()}/api/cheapest/${entry.name}`;
+    const res = await fetch(cheapestUrl, { method: "GET", mode: "cors" });
     const data = await res.json();
     setCheapest(data);
+
+    const secondCheapestUrl = `${getBaseUrl()}/api/csfloat/secondcheapest/${entry.name}/${entry.defIndex}/${entry.paintIndex}`;
+    const res2 = await fetch(secondCheapestUrl, { method: "GET", mode: "cors" });
+    const data2 = await res2.json();
+    setSecondCheapest(data2);
   };
 
   return (
-    <div style={{ height: "41px", marginTop: "20px", marginBottom: "0px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+    <div style={{ display: "flex", height: "80px", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
       {!cheapest && (
-        <button onClick={getCheapest} className="btn">
-          Find cheapest
+        <button onClick={marketCheck} className="btn">
+          Market check
         </button>
       )}
-      {cheapest && cheapest.price < entry.price && (
-        <p>
-          Found for ${cheapest.price} at {cheapest.marketName}
-        </p>
+      {cheapest && secondCheapest && (
+        <div>
+          <p>
+            7d cheapest: {cheapest.marketName} - ${cheapest.price}
+          </p>
+          <p>2nd cheapest on CSGOFloat: {secondCheapest?.price}</p>
+        </div>
       )}
-      {cheapest && cheapest.price >= entry.price && <p>No cheaper offer found</p>}
     </div>
   );
 }

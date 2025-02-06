@@ -6,6 +6,8 @@ export interface EntryModel {
   discountPercentage: number;
   id: string;
   tradeVolume: number;
+  defIndex: number;
+  paintIndex: number;
 }
 
 export interface CheapestModel {

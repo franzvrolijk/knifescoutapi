@@ -89,10 +89,6 @@ suspend fun getSkinSnipeId(name: String): Int {
 
     val results = json.decodeFromString<List<SkinSnipeSearch>>(body)
 
-    if (results.count() != 1) {
-        throw Exception("SkinSnipe search with name $formattedName returned ${results.count()} results: \n ${json.encodeToString(results)}")
-    }
-
     return results.first().id
 }
 
