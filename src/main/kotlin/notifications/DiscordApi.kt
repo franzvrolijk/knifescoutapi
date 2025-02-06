@@ -1,4 +1,4 @@
-package com.knifescout.discord
+package com.knifescout.notifications
 
 import com.knifescout.json
 import io.ktor.client.*

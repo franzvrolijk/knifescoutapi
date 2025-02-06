@@ -54,7 +54,7 @@ suspend fun getMostDiscounted(): List<Entry>? {
 
     var i = 0
 
-    while (i < 15) {
+    while (i < 7) {
         delay(500)
 
         body = getCsFloatData("$params&cursor=${csFloatResponse.cursor}") ?: return null
